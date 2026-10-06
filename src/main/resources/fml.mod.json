@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "skinport",
+  "version": "${version}",
+  "name": "SkinPort",
+  "description": "This mod adds rendering support for the new skin format introduced in minecraft 1.8",
+  "authors": [
+    "zlainsama",
+    "Xy_Luce"
+  ],
+  "contact": {
+    "homepage": "https://minecraftistooeasy.github.io/",
+    "sources": "https://github.com/MinecraftIsTooEasy/skinport"
+  },
+  "license": "MIT",
+  "icon": "assets/skinport/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "com.example.ExampleMod"
+    ]
+  },
+  "mixins": [
+    "modid.mixins.json"
+  ],
+  "depends": {
+    "fishmodloader": ">=3.4.0",
+    "minecraft": "1.6.4-mite",
+    "java": ">=17",
+    "rusted_iron_core": ">=1.3.5"
+  },
+  "accessWidener": "skinport.accesswidener"
+}

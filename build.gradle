@@ -1,58 +1,127 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
+plugins {
+    id 'fml-loom' version '0.1'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven {
+        name = "Spongepowered"
+        url = "https://repo.spongepowered.org/repository/maven-public/"
+    }
+    maven {
+        name = "ModdedMITE"
+        url = "https://maven.limingzxc.top/repository/maven-public/"
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+}
+
+configurations {
+    fml
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+
+    implementation("it.unimi.dsi:fastutil:8.5.12")
+    implementation("com.google.code.gson:gson:2.11.0")
+
+    fml "com.github.MinecraftIsTooEasy:FishModLoader:3.4.2"
+    implementation "com.github.MinecraftIsTooEasy:FishModLoader:3.4.2"
+
+    implementation "com.github.MinecraftIsTooEasy:RustedIronCore:1.5.7"
+
+}
+
+def fmlResolvedFile = configurations.fml.files.iterator().next()
+
+loom {
+    accessWidenerPath = file("src/main/resources/skinport.accesswidener")
+    mergedMinecraftJar()
+    setFML(fmlResolvedFile)
+    dependencies.add("mappings", fmlMCPMappings())
+    mods {
+        "skinport" {
+            sourceSet sourceSets.main
         }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+    runs {
+        client {
+            String name = project.username
+            String width = project.screen_width
+            String height = project.screen_height
+            programArgs "--userProperties", "{}", "--username", name, "--session", "a.a.a.a", "--width", width, "--height", height
         }
     }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
-    }
 }
 
-apply plugin: 'forge'
-
-version = "1.7.10-v10d"
-group= "lain.mods.skinport"
-archivesBaseName = "SkinPort"
-
-minecraft {
-    version = "1.7.10-10.13.4.1448-1.7.10"
-    runDir = "eclipse"
-}
-
-jar
-{
-    manifest {
-        attributes 'FMLCorePlugin': 'lain.mods.skinport.init.forge.asm.Plugin',
-		           'FMLCorePluginContainsFMLMod': 'true'
-    }
-}
-
-processResources
-{
+processResources {
     inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
 
-    from 'LICENSE.txt'
-
-    from(sourceSets.main.resources.srcDirs)
-    {
-        include 'mcmod.info'
-
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-    }
-
-    from(sourceSets.main.resources.srcDirs)
-    {
-        exclude 'mcmod.info'
+    filesMatching("fml.mod.json") {
+        expand "version": project.version
     }
 }
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 17
+}
+
+java {
+    withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+    inputs.property "archivesName", project.base.archivesName
+
+    from("LICENSE") {
+        rename { "${it}_${inputs.properties.archivesName}"}
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = project.archives_base_name
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name = "ModdedMITE"
+            url = uri("https://maven.limingzxc.top/repository/maven-releases/")
+            credentials {
+                username = project.findProperty("nexusUsername")
+                password = project.findProperty("nexusPassword")
+            }
+        }
+    }
+}
+
+tasks.register("release") {
+    group = "release"
+    description = "Build and trigger GitHub Actions release workflow"
+
+    doLast {
+        def tag = "v${project.version}"
+        exec {
+            commandLine "git", "tag", "-a", tag, "-m", "Release ${project.version}"
+        }
+        exec {
+            commandLine "git", "push", "origin", tag
+        }
+    }
+}
