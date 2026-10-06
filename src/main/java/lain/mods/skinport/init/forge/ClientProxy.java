@@ -1,56 +1,50 @@
 package lain.mods.skinport.init.forge;
 
+import com.mojang.authlib.GameProfile;
+import lain.mods.skinport.impl.forge.SkinCustomization;
+import lain.mods.skinport.impl.forge.SkinPortGuiCustomizeSkin;
+import lain.mods.skinport.impl.forge.SkinPortModelHumanoidHead;
+import lain.mods.skinport.impl.forge.SkinPortRenderPlayer;
+import lain.mods.skinport.impl.forge.SkinPortTextureData;
+import lain.mods.skinport.impl.forge.SpecialModel;
+import lain.mods.skinport.impl.forge.SpecialRenderer;
+import lain.mods.skins.api.SkinProviderAPI;
+import lain.mods.skins.api.interfaces.ISkin;
+import lain.mods.skins.impl.PlayerProfile;
+import lain.mods.skins.impl.forge.CustomSkinTexture;
+import net.minecraft.AbstractClientPlayer;
+import net.minecraft.EntityPlayer;
+import net.minecraft.GuiButton;
+import net.minecraft.GuiOptions;
+import net.minecraft.I18n;
+import net.minecraft.Minecraft;
+import net.minecraft.ModelBiped;
+import net.minecraft.ModelSkeletonHead;
+import net.minecraft.Render;
+import net.minecraft.RenderManager;
+import net.minecraft.ResourceLocation;
+import net.minecraft.TextureObject;
+import net.minecraft.TextureUtil;
+import net.minecraft.ThreadDownloadImageData;
+import net.minecraft.World;
+import net.xiaoyu233.fml.FishModLoader;
+import org.lwjgl.opengl.GL11;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
-import com.mojang.authlib.GameProfile;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.client.registry.ClientRegistry;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
-import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import lain.mods.skinport.impl.forge.SkinCustomization;
-import lain.mods.skinport.impl.forge.SkinPortGuiCustomizeSkin;
-import lain.mods.skinport.impl.forge.SkinPortModelHumanoidHead;
-import lain.mods.skinport.impl.forge.SkinPortRenderPlayer;
-import lain.mods.skinport.impl.forge.SpecialModel;
-import lain.mods.skinport.impl.forge.SpecialRenderer;
-import lain.mods.skinport.impl.forge.compat.SkinPortRenderPlayer_MPM;
-import lain.mods.skinport.impl.forge.compat.SkinPortRenderPlayer_RPA;
-import lain.mods.skins.api.SkinProviderAPI;
-import lain.mods.skins.api.interfaces.ISkin;
-import lain.mods.skins.impl.PlayerProfile;
-import lain.mods.skins.impl.forge.CustomSkinTexture;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiOptions;
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.model.ModelSkeletonHead;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.texture.ITextureObject;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntitySkull;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 
-@SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy
 {
 
     private static final Map<String, Render> renderers = new HashMap<>();
     private static final Map<ByteBuffer, CustomSkinTexture> textures = new WeakHashMap<>();
     private static final SkinPortModelHumanoidHead modelHumanoidHead = new SkinPortModelHumanoidHead();
+    private static final SkinPortTextureData readyTextureData = new SkinPortTextureData(true);
 
     public static ResourceLocation bindTexture(GameProfile profile, ResourceLocation result)
     {
@@ -70,7 +64,7 @@ public class ClientProxy extends CommonProxy
 
     public static ModelSkeletonHead getHumanoidHead(ResourceLocation location, ModelSkeletonHead result)
     {
-        ITextureObject texture = FMLClientHandler.instance().getClient().getTextureManager().getTexture(location);
+        TextureObject texture = Minecraft.getMinecraft().getTextureManager().getTexture(location);
         if (texture instanceof CustomSkinTexture)
             return modelHumanoidHead;
         return null;
@@ -78,7 +72,7 @@ public class ClientProxy extends CommonProxy
 
     public static ResourceLocation getLocationCape(AbstractClientPlayer player, ResourceLocation result)
     {
-        ISkin skin = SkinProviderAPI.CAPE.getSkin(PlayerProfile.wrapGameProfile(player.getGameProfile()));
+        ISkin skin = SkinProviderAPI.CAPE.getSkin(PlayerProfile.wrapPlayer(player));
         if (skin != null && skin.isDataReady())
             return ClientProxy.getOrCreateTexture(skin.getData(), skin).getLocation();
         return null;
@@ -86,10 +80,20 @@ public class ClientProxy extends CommonProxy
 
     public static ResourceLocation getLocationSkin(AbstractClientPlayer player, ResourceLocation result)
     {
-        ISkin skin = SkinProviderAPI.SKIN.getSkin(PlayerProfile.wrapGameProfile(player.getGameProfile()));
+        ISkin skin = SkinProviderAPI.SKIN.getSkin(PlayerProfile.wrapPlayer(player));
         if (skin != null && skin.isDataReady())
             return ClientProxy.getOrCreateTexture(skin.getData(), skin).getLocation();
         return null;
+    }
+
+    public static ThreadDownloadImageData getTextureSkin(AbstractClientPlayer player, ThreadDownloadImageData result)
+    {
+        return ClientProxy.getLocationSkin(player, null) != null ? readyTextureData : result;
+    }
+
+    public static ThreadDownloadImageData getTextureCape(AbstractClientPlayer player, ThreadDownloadImageData result)
+    {
+        return ClientProxy.getLocationCape(player, null) != null ? readyTextureData : result;
     }
 
     public static CustomSkinTexture getOrCreateTexture(ByteBuffer data, ISkin skin)
@@ -97,7 +101,7 @@ public class ClientProxy extends CommonProxy
         if (!textures.containsKey(data))
         {
             CustomSkinTexture texture = new CustomSkinTexture(generateRandomLocation(), data);
-            FMLClientHandler.instance().getClient().getTextureManager().loadTexture(texture.getLocation(), texture);
+            Minecraft.getMinecraft().getTextureManager().loadTexture(texture.getLocation(), texture);
             textures.put(data, texture);
 
             if (skin != null)
@@ -105,11 +109,9 @@ public class ClientProxy extends CommonProxy
                 skin.setRemovalListener(s -> {
                     if (data == s.getData())
                     {
-                        // addScheduledTask
-                        FMLClientHandler.instance().getClient().func_152344_a(() -> {
-                            FMLClientHandler.instance().getClient().getTextureManager().deleteTexture(texture.getLocation());
-                            textures.remove(data);
-                        });
+                        Minecraft.getMinecraft().getTextureManager().loadTexture(texture.getLocation(), TextureUtil.missingTexture);
+                        GL11.glDeleteTextures(texture.getGlTextureId());
+                        textures.remove(data);
                     }
                 });
             }
@@ -132,7 +134,7 @@ public class ClientProxy extends CommonProxy
         ResourceLocation location = getLocationSkin(player, null);
         if (location != null)
         {
-            ISkin skin = SkinProviderAPI.SKIN.getSkin(PlayerProfile.wrapGameProfile(player.getGameProfile()));
+            ISkin skin = SkinProviderAPI.SKIN.getSkin(PlayerProfile.wrapPlayer(player));
             if (skin != null && skin.isDataReady())
                 return skin.getSkinType();
         }
@@ -163,63 +165,49 @@ public class ClientProxy extends CommonProxy
         return textureWidth;
     }
 
-    @SideOnly(Side.CLIENT)
     public static void onButtonAction(GuiOptions gui, GuiButton button)
     {
         if (!button.enabled || button.id != 110)
             return;
-        gui.mc.gameSettings.saveOptions();
-        gui.mc.displayGuiScreen(new SkinPortGuiCustomizeSkin(gui));
+        Minecraft.getMinecraft().gameSettings.saveOptions();
+        Minecraft.getMinecraft().displayGuiScreen(new SkinPortGuiCustomizeSkin(gui));
     }
 
     public static void setupButton(GuiOptions gui, List<GuiButton> buttonList)
     {
-        buttonList.add(new GuiButton(110, gui.width / 2 - 155, gui.height / 6 + 48 - 6, 150, 20, I18n.format("options.skinCustomisation")));
+        if (FishModLoader.hasMod("better_game_setting"))
+        {
+            buttonList.add(new GuiButton(110, gui.width / 2 - 152, gui.height / 6 + 96 - 30, 150, 20, I18n.getString("options.skinCustomisation")));
+        }
+        else
+        {
+            buttonList.add(new GuiButton(110, gui.width / 2 - 255, gui.height / 6 + 168, 150, 20, I18n.getString("options.skinCustomisation")));
+        }
     }
 
     public static void setupRenderers(RenderManager manager)
     {
-        if (Loader.isModLoaded("moreplayermodels")) // Compatibility with MorePlayerModels
-        {
-            renderers.put("default", new SkinPortRenderPlayer_MPM(manager, false));
-            renderers.put("slim", new SkinPortRenderPlayer_MPM(manager, true));
-        }
-        else if (Loader.isModLoaded("RenderPlayerAPI")) // Compatibility with RenderPlayerAPI
-        {
-            renderers.put("default", new SkinPortRenderPlayer_RPA(manager, false));
-            renderers.put("slim", new SkinPortRenderPlayer_RPA(manager, true));
-        }
-        else
-        {
-            renderers.put("default", new SkinPortRenderPlayer(manager, false));
-            renderers.put("slim", new SkinPortRenderPlayer(manager, true));
-        }
+        renderers.put("default", new SkinPortRenderPlayer(manager, false));
+        renderers.put("slim", new SkinPortRenderPlayer(manager, true));
     }
 
-    @SubscribeEvent
-    public void handleClientTicks(TickEvent.ClientTickEvent event)
+    public void handleClientTicks()
     {
-        if (event.phase == TickEvent.Phase.START)
+        World world = Minecraft.getMinecraft().theWorld;
+        if (world != null)
         {
-            World world = Minecraft.getMinecraft().theWorld;
-            if (world != null)
+            for (Object obj : world.playerEntities)
             {
-                for (Object obj : world.playerEntities)
-                {
-                    EntityPlayer player = (EntityPlayer) obj;
-                    SkinProviderAPI.SKIN.getSkin(PlayerProfile.wrapGameProfile(player.getGameProfile()));
-                    SkinProviderAPI.CAPE.getSkin(PlayerProfile.wrapGameProfile(player.getGameProfile()));
-                }
-                if (TileEntityRendererDispatcher.instance.getSpecialRendererByClass(TileEntitySkull.class).getClass() != TileEntitySkullRenderer.class) // Aggressively restore vanilla TileEntitySkullRenderer
-                    ClientRegistry.bindTileEntitySpecialRenderer(TileEntitySkull.class, new TileEntitySkullRenderer());
+                EntityPlayer player = (EntityPlayer) obj;
+                SkinProviderAPI.SKIN.getSkin(PlayerProfile.wrapPlayer(player));
+                SkinProviderAPI.CAPE.getSkin(PlayerProfile.wrapPlayer(player));
             }
         }
     }
 
-    @SubscribeEvent
-    public void handleEvent(ClientDisconnectionFromServerEvent event)
+    public void onDisconnect()
     {
-        SkinCustomization.Flags.clear(Side.CLIENT);
+        SkinCustomization.Flags.clear(MixinEnvironment.Side.CLIENT);
     }
 
 }

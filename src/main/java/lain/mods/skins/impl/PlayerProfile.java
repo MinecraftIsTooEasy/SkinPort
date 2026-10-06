@@ -1,11 +1,5 @@
 package lain.mods.skins.impl;
 
-import java.lang.ref.WeakReference;
-import java.util.Collection;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -14,11 +8,24 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.mojang.authlib.GameProfile;
 import lain.mods.skins.api.interfaces.IPlayerProfile;
+import net.minecraft.EntityPlayer;
+
+import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class PlayerProfile implements IPlayerProfile
 {
 
     private static final PlayerProfile DUMMY = new PlayerProfile(Shared.DUMMY);
+
+    private static final Map<EntityPlayer, GameProfile> playerProfiles = Collections.synchronizedMap(new WeakHashMap<EntityPlayer, GameProfile>());
 
     private static final LoadingCache<GameProfile, PlayerProfile> profiles = CacheBuilder.newBuilder().weakKeys().refreshAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<GameProfile, PlayerProfile>()
     {
@@ -176,6 +183,23 @@ public class PlayerProfile implements IPlayerProfile
     {
         if (profile == null)
             return DUMMY;
+        return profiles.getUnchecked(profile);
+    }
+
+    /**
+     * @param player the player to wrap.
+     * @return a PlayerProfile for the player, reused for the same player entity.
+     */
+    public static PlayerProfile wrapPlayer(EntityPlayer player)
+    {
+        if (player == null)
+            return DUMMY;
+        GameProfile profile;
+        synchronized (playerProfiles)
+        {
+            if ((profile = playerProfiles.get(player)) == null)
+                playerProfiles.put(player, profile = new GameProfile(player.getUniqueIDSilent(), player.getCommandSenderName()));
+        }
         return profiles.getUnchecked(profile);
     }
 

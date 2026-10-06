@@ -1,5 +1,15 @@
 package lain.mods.skins.impl;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListenableFutureTask;
+import com.mojang.authlib.GameProfile;
+import lain.lib.Retries;
+import lain.lib.SharedPool;
+import lain.lib.SimpleDownloader;
+import lain.mods.skins.impl.forge.MinecraftUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,15 +31,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListenableFutureTask;
-import com.mojang.authlib.GameProfile;
-import lain.lib.Retries;
-import lain.lib.SharedPool;
-import lain.lib.SimpleDownloader;
-import lain.mods.skins.impl.forge.MinecraftUtils;
 
 public class Shared
 {

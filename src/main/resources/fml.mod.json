@@ -14,14 +14,17 @@
   },
   "license": "MIT",
   "icon": "assets/skinport/icon.png",
-  "environment": "client",
+  "environment": "*",
   "entrypoints": {
     "main": [
-      "com.example.ExampleMod"
+      "lain.mods.skinport.init.forge.ForgeSkinPort"
+    ],
+    "client": [
+      "lain.mods.skinport.init.forge.SkinPortClient"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "skinport.mixins.json"
   ],
   "depends": {
     "fishmodloader": ">=3.4.0",

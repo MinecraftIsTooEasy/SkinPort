@@ -1,14 +1,13 @@
 package lain.mods.skins.impl;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.function.Function;
-import javax.imageio.ImageIO;
 
 public class LegacyConversion
 {

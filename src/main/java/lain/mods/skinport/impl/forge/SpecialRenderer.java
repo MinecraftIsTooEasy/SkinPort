@@ -1,7 +1,7 @@
 package lain.mods.skinport.impl.forge;
 
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.AbstractClientPlayer;
+import net.minecraft.RenderManager;
 
 public interface SpecialRenderer
 {

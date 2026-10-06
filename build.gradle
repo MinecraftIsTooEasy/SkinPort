@@ -23,6 +23,10 @@ repositories {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
     }
+    maven {
+        name = 'Mojang'
+        url = 'https://libraries.minecraft.net/'
+    }
 }
 
 configurations {
@@ -39,7 +43,8 @@ dependencies {
     implementation "com.github.MinecraftIsTooEasy:FishModLoader:3.4.2"
 
     implementation "com.github.MinecraftIsTooEasy:RustedIronCore:1.5.7"
-
+    implementation 'com.mojang:authlib:1.5.25'
+    implementation "maven.modrinth:forge-config-legacyfabric:1.0.0"
 }
 
 def fmlResolvedFile = configurations.fml.files.iterator().next()
@@ -88,6 +93,19 @@ jar {
 
     from("LICENSE") {
         rename { "${it}_${inputs.properties.archivesName}"}
+    }
+
+    from({
+        configurations.runtimeClasspath
+                .filter {
+                    it.name.startsWith("authlib")
+                }
+                .collect {
+                    zipTree(it)
+                }
+    }) {
+        exclude "META-INF/**"
+        exclude "module-info.class"
     }
 }
 

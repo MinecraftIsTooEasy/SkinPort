@@ -1,20 +1,19 @@
 package lain.mods.skinport.impl.forge;
 
+import lain.mods.skins.impl.PlayerProfile;
+import net.minecraft.AbstractClientPlayer;
+import net.minecraft.EntityPlayer;
+import net.minecraft.Minecraft;
+import net.minecraft.ModelBiped;
+import net.minecraft.RenderManager;
+import net.minecraft.RenderPlayer;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import lain.mods.skinport.impl.forge.network.packet.PacketGet1;
-import lain.mods.skinport.init.forge.ForgeSkinPort;
-import lain.mods.skins.impl.PlayerProfile;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.RenderPlayer;
-import net.minecraft.entity.player.EntityPlayer;
 
-@SideOnly(Side.CLIENT)
 public class SkinPortRenderPlayer extends RenderPlayer
 {
 
@@ -28,10 +27,20 @@ public class SkinPortRenderPlayer extends RenderPlayer
         mainModel = new SkinPortModelPlayer(0.0F, smallArms);
         modelBipedMain = (ModelBiped) mainModel;
         modelPlayer = (SkinPortModelPlayer) mainModel;
+
+        try
+        {
+            Field field = RenderPlayer.class.getDeclaredField("models");
+            field.setAccessible(true);
+            ((List<ModelBiped>) field.get(this)).add(modelPlayer);
+        }
+        catch (Exception e)
+        {
+        }
     }
 
     @Override
-    public void doRender(AbstractClientPlayer p_76986_1_, double p_76986_2_, double p_76986_4_, double p_76986_6_, float p_76986_8_, float p_76986_9_)
+    public void func_130009_a(AbstractClientPlayer p_76986_1_, double p_76986_2_, double p_76986_4_, double p_76986_6_, float p_76986_8_, float p_76986_9_)
     {
         boolean smHeadwear = modelPlayer.bipedHeadwear.showModel;
         boolean smLeftLegwear = modelPlayer.bipedLeftLegwear.showModel;
@@ -57,7 +66,7 @@ public class SkinPortRenderPlayer extends RenderPlayer
         if (modelPlayer.bipedCloak.showModel)
             modelPlayer.bipedCloak.showModel = SkinCustomization.contains(flags, SkinCustomization.cape);
 
-        super.doRender(p_76986_1_, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_8_, p_76986_9_);
+        super.func_130009_a(p_76986_1_, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_8_, p_76986_9_);
 
         modelPlayer.bipedHeadwear.showModel = smHeadwear;
         modelPlayer.bipedLeftLegwear.showModel = smLeftLegwear;
@@ -72,19 +81,20 @@ public class SkinPortRenderPlayer extends RenderPlayer
     {
         if (player == Minecraft.getMinecraft().thePlayer)
             return SkinCustomization.ClientFlags;
-        UUID uuid = player.getUniqueID();
-        Optional<UUID> uuid2 = Optional.ofNullable(PlayerProfile.wrapGameProfile(player.getGameProfile()).getPlayerID());
-        Integer flags = SkinCustomization.Flags.get(Side.CLIENT, uuid, uuid2);
+        UUID uuid = player.getUniqueIDSilent();
+        if (uuid == null)
+            uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + player.getCommandSenderName()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Optional<UUID> uuid2 = Optional.ofNullable(PlayerProfile.wrapPlayer(player).getPlayerID());
+        Integer flags = SkinCustomization.Flags.get(MixinEnvironment.Side.CLIENT, uuid, uuid2);
         if (flags == null)
         {
-            SkinCustomization.Flags.put(Side.CLIENT, uuid, uuid2, flags = SkinCustomization.getDefaultFlags());
-            ForgeSkinPort.network.sendToServer(new PacketGet1(uuid));
+            SkinCustomization.Flags.put(MixinEnvironment.Side.CLIENT, uuid, uuid2, flags = SkinCustomization.getDefaultFlags());
         }
         return flags;
     }
 
     @Override
-    protected void renderEquippedItems(AbstractClientPlayer p_77029_1_, float p_77029_2_)
+    protected void renderSpecials(AbstractClientPlayer p_77029_1_, float p_77029_2_)
     {
         boolean smHeadwear = modelPlayer.bipedHeadwear.showModel;
         boolean smLeftLegwear = modelPlayer.bipedLeftLegwear.showModel;
@@ -110,7 +120,7 @@ public class SkinPortRenderPlayer extends RenderPlayer
         if (modelPlayer.bipedCloak.showModel)
             modelPlayer.bipedCloak.showModel = SkinCustomization.contains(flags, SkinCustomization.cape);
 
-        super.renderEquippedItems(p_77029_1_, p_77029_2_);
+        super.renderSpecials(p_77029_1_, p_77029_2_);
 
         modelPlayer.bipedHeadwear.showModel = smHeadwear;
         modelPlayer.bipedLeftLegwear.showModel = smLeftLegwear;

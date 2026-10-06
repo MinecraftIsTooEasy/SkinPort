@@ -1,17 +1,20 @@
 package lain.mods.skinport.impl.forge.network.packet;
 
-import java.util.UUID;
-import cpw.mods.fml.relauncher.Side;
-import io.netty.buffer.ByteBuf;
 import lain.mods.skinport.impl.forge.SkinCustomization;
-import lain.mods.skinport.impl.forge.network.NetworkPacket;
-import net.minecraft.entity.player.EntityPlayerMP;
+import lain.mods.skinport.impl.forge.network.SkinPortPackets;
+import moddedmite.rustedironcore.network.Packet;
+import moddedmite.rustedironcore.network.PacketByteBuf;
+import net.minecraft.EntityPlayer;
+import net.minecraft.ResourceLocation;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
-public class PacketPut1 extends NetworkPacket
+import java.util.UUID;
+
+public class PacketPut1 implements Packet
 {
 
-    UUID uuid;
-    int value;
+    private UUID uuid;
+    private int value;
 
     public PacketPut1()
     {
@@ -23,30 +26,30 @@ public class PacketPut1 extends NetworkPacket
         this.value = value;
     }
 
-    @Override
-    public void handlePacketClient()
+    public PacketPut1(PacketByteBuf buf)
     {
-        SkinCustomization.Flags.put(Side.CLIENT, uuid, value);
+        this.uuid = new UUID(buf.readLong(), buf.readLong());
+        this.value = buf.readInt();
     }
 
     @Override
-    public void handlePacketServer(EntityPlayerMP player)
-    {
-    }
-
-    @Override
-    public void readFromBuffer(ByteBuf buf)
-    {
-        uuid = new UUID(buf.readLong(), buf.readLong());
-        value = buf.readInt();
-    }
-
-    @Override
-    public void writeToBuffer(ByteBuf buf)
+    public void write(PacketByteBuf buf)
     {
         buf.writeLong(uuid.getMostSignificantBits());
         buf.writeLong(uuid.getLeastSignificantBits());
         buf.writeInt(value);
+    }
+
+    @Override
+    public void apply(EntityPlayer player)
+    {
+        SkinCustomization.Flags.put(MixinEnvironment.Side.CLIENT, uuid, value);
+    }
+
+    @Override
+    public ResourceLocation getChannel()
+    {
+        return SkinPortPackets.Put1;
     }
 
 }

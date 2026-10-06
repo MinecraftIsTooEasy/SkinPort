@@ -1,14 +1,15 @@
 package lain.mods.skins.providers;
 
-import java.nio.ByteBuffer;
-import java.util.Optional;
-import java.util.function.Function;
 import lain.lib.SharedPool;
 import lain.mods.skins.api.interfaces.IPlayerProfile;
 import lain.mods.skins.api.interfaces.ISkin;
 import lain.mods.skins.api.interfaces.ISkinProvider;
 import lain.mods.skins.impl.Shared;
 import lain.mods.skins.impl.SkinData;
+
+import java.nio.ByteBuffer;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class CrafatarCapeProvider implements ISkinProvider
 {

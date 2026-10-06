@@ -1,9 +1,5 @@
 package lain.mods.skins.providers;
 
-import java.nio.ByteBuffer;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import lain.lib.SharedPool;
@@ -13,6 +9,11 @@ import lain.mods.skins.api.interfaces.ISkinProvider;
 import lain.mods.skins.impl.Shared;
 import lain.mods.skins.impl.SkinData;
 import lain.mods.skins.impl.forge.MinecraftUtils;
+
+import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class MojangCapeProvider implements ISkinProvider
 {

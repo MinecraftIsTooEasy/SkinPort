@@ -1,5 +1,18 @@
 package lain.mods.skins.api;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import lain.lib.SharedPool;
+import lain.mods.skins.api.interfaces.IPlayerProfile;
+import lain.mods.skins.api.interfaces.ISkin;
+import lain.mods.skins.api.interfaces.ISkinProvider;
+import lain.mods.skins.api.interfaces.ISkinProviderService;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,18 +26,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import lain.lib.SharedPool;
-import lain.mods.skins.api.interfaces.IPlayerProfile;
-import lain.mods.skins.api.interfaces.ISkin;
-import lain.mods.skins.api.interfaces.ISkinProvider;
-import lain.mods.skins.api.interfaces.ISkinProviderService;
 
 public class SkinProviderAPI
 {

@@ -1,28 +1,33 @@
 package lain.mods.skinport.init.forge;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
-import cpw.mods.fml.relauncher.Side;
 import lain.mods.skinport.impl.forge.SkinCustomization;
+import lain.mods.skinport.impl.forge.network.SkinPortPackets;
 import lain.mods.skinport.impl.forge.network.packet.PacketGet0;
-import net.minecraft.entity.player.EntityPlayerMP;
+import moddedmite.rustedironcore.api.event.Handlers;
+import moddedmite.rustedironcore.api.event.events.PlayerLoggedInEvent;
+import moddedmite.rustedironcore.api.event.events.PlayerLoggedOutEvent;
+import moddedmite.rustedironcore.api.event.listener.IPlayerEventListener;
+import moddedmite.rustedironcore.network.Network;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 public class CommonProxy
 {
-
-    @SubscribeEvent
-    public void handleEvent(PlayerLoggedInEvent event)
+    public void register()
     {
-        if (event.player instanceof EntityPlayerMP)
-            ForgeSkinPort.network.sendTo(new PacketGet0(), (EntityPlayerMP) event.player);
+        SkinPortPackets.registerServerReaders();
+        Handlers.PlayerEvent.register(new IPlayerEventListener()
+        {
+            @Override
+            public void onPlayerLoggedIn(PlayerLoggedInEvent event)
+            {
+                Network.sendToClient(event.player(), new PacketGet0());
+            }
+            
+            @Override
+            public void onPlayerLoggedOut(PlayerLoggedOutEvent event)
+            {
+                SkinCustomization.Flags.remove(MixinEnvironment.Side.SERVER, event.player().getUniqueID());
+            }
+        });
     }
-
-    @SubscribeEvent
-    public void handleEvent(PlayerLoggedOutEvent event)
-    {
-        if (event.player instanceof EntityPlayerMP)
-            SkinCustomization.Flags.remove(Side.SERVER, event.player.getUniqueID());
-    }
-
 }

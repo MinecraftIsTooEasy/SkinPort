@@ -1,12 +1,12 @@
 package lain.mods.skinport.impl.forge;
 
+import net.minecraft.ChatMessageComponent;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import cpw.mods.fml.relauncher.Side;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.IChatComponent;
 
 public enum SkinCustomization
 {
@@ -22,19 +22,19 @@ public enum SkinCustomization
     public static class SidedOptionalTupleKeyMap<K, V>
     {
 
-        Map<Side, Map<K, V>> map = new ConcurrentHashMap<>();
+        Map<MixinEnvironment.Side, Map<K, V>> map = new ConcurrentHashMap<>();
 
-        public void clear(Side side)
+        public void clear(MixinEnvironment.Side side)
         {
             getMap(side).clear();
         }
 
-        public V get(Side side, K key)
+        public V get(MixinEnvironment.Side side, K key)
         {
             return get(side, key, Optional.empty());
         }
 
-        public V get(Side side, K key, Optional<K> key2)
+        public V get(MixinEnvironment.Side side, K key, Optional<K> key2)
         {
             Map<K, V> m = getMap(side);
             V v = m.get(key);
@@ -43,14 +43,14 @@ public enum SkinCustomization
             return v;
         }
 
-        private Map<K, V> getMap(Side side)
+        private Map<K, V> getMap(MixinEnvironment.Side side)
         {
             if (!map.containsKey(side))
                 map.putIfAbsent(side, new ConcurrentHashMap<>());
             return map.get(side);
         }
 
-        public V put(Side side, K key, Optional<K> key2, V value)
+        public V put(MixinEnvironment.Side side, K key, Optional<K> key2, V value)
         {
             Map<K, V> m = getMap(side);
             V v = m.put(key, value);
@@ -59,17 +59,17 @@ public enum SkinCustomization
             return v;
         }
 
-        public V put(Side side, K key, V value)
+        public V put(MixinEnvironment.Side side, K key, V value)
         {
             return put(side, key, Optional.empty(), value);
         }
 
-        public V remove(Side side, K key)
+        public V remove(MixinEnvironment.Side side, K key)
         {
             return remove(side, key, Optional.empty());
         }
 
-        public V remove(Side side, K key, Optional<K> key2)
+        public V remove(MixinEnvironment.Side side, K key, Optional<K> key2)
         {
             Map<K, V> m = getMap(side);
             V v = m.remove(key);
@@ -103,10 +103,10 @@ public enum SkinCustomization
         return flags;
     }
 
-    private final IChatComponent _displayName = new ChatComponentTranslation("options.modelPart." + name(), new Object[0]);
+    private final ChatMessageComponent _displayName = ChatMessageComponent.createFromTranslationKey("options.modelPart." + name());
     private final int _flag = (int) Math.pow(2, ordinal());
 
-    public IChatComponent getDisplayName()
+    public ChatMessageComponent getDisplayName()
     {
         return _displayName;
     }

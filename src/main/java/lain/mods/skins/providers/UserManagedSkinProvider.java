@@ -1,15 +1,16 @@
 package lain.mods.skins.providers;
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.util.function.Function;
 import lain.lib.SharedPool;
 import lain.mods.skins.api.interfaces.IPlayerProfile;
 import lain.mods.skins.api.interfaces.ISkin;
 import lain.mods.skins.api.interfaces.ISkinProvider;
 import lain.mods.skins.impl.Shared;
 import lain.mods.skins.impl.SkinData;
+
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.util.function.Function;
 
 public class UserManagedSkinProvider implements ISkinProvider
 {

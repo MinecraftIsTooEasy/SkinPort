@@ -1,17 +1,20 @@
 package lain.mods.skinport.impl.forge.network.packet;
 
-import java.util.UUID;
-import cpw.mods.fml.relauncher.Side;
-import io.netty.buffer.ByteBuf;
 import lain.mods.skinport.impl.forge.SkinCustomization;
-import lain.mods.skinport.impl.forge.network.NetworkPacket;
-import lain.mods.skinport.init.forge.ForgeSkinPort;
-import net.minecraft.entity.player.EntityPlayerMP;
+import lain.mods.skinport.impl.forge.network.SkinPortPackets;
+import moddedmite.rustedironcore.network.Network;
+import moddedmite.rustedironcore.network.Packet;
+import moddedmite.rustedironcore.network.PacketByteBuf;
+import net.minecraft.EntityPlayer;
+import net.minecraft.ResourceLocation;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
-public class PacketPut0 extends NetworkPacket
+import java.util.UUID;
+
+public class PacketPut0 implements Packet
 {
 
-    int value;
+    private int value;
 
     public PacketPut0()
     {
@@ -22,29 +25,29 @@ public class PacketPut0 extends NetworkPacket
         this.value = value;
     }
 
-    @Override
-    public void handlePacketClient()
+    public PacketPut0(PacketByteBuf buf)
     {
+        this.value = buf.readInt();
     }
 
     @Override
-    public void handlePacketServer(EntityPlayerMP player)
-    {
-        UUID uuid = player.getUniqueID();
-        SkinCustomization.Flags.put(Side.SERVER, uuid, value);
-        ForgeSkinPort.network.sendToAll(new PacketPut1(uuid, value));
-    }
-
-    @Override
-    public void readFromBuffer(ByteBuf buf)
-    {
-        value = buf.readInt();
-    }
-
-    @Override
-    public void writeToBuffer(ByteBuf buf)
+    public void write(PacketByteBuf buf)
     {
         buf.writeInt(value);
+    }
+
+    @Override
+    public void apply(EntityPlayer player)
+    {
+        UUID uuid = player.getUniqueID();
+        SkinCustomization.Flags.put(MixinEnvironment.Side.SERVER, uuid, value);
+        Network.sendToAllPlayers(new PacketPut1(uuid, value));
+    }
+
+    @Override
+    public ResourceLocation getChannel()
+    {
+        return SkinPortPackets.Put0;
     }
 
 }

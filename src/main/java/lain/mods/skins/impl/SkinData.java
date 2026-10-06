@@ -1,5 +1,8 @@
 package lain.mods.skins.impl;
 
+import lain.mods.skins.api.interfaces.ISkin;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,8 +13,6 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.imageio.ImageIO;
-import lain.mods.skins.api.interfaces.ISkin;
 
 public class SkinData implements ISkin
 {

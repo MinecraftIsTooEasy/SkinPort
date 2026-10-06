@@ -1,8 +1,8 @@
 package lain.mods.skinport.impl.forge;
 
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.client.model.ModelSkeletonHead;
-import net.minecraft.entity.Entity;
+import net.minecraft.Entity;
+import net.minecraft.ModelRenderer;
+import net.minecraft.ModelSkeletonHead;
 
 public class SkinPortModelHumanoidHead extends ModelSkeletonHead
 {

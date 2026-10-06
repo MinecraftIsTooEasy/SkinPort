@@ -1,12 +1,14 @@
 package lain.mods.skinport.impl.forge.network.packet;
 
-import io.netty.buffer.ByteBuf;
 import lain.mods.skinport.impl.forge.SkinCustomization;
-import lain.mods.skinport.impl.forge.network.NetworkPacket;
-import lain.mods.skinport.init.forge.ForgeSkinPort;
-import net.minecraft.entity.player.EntityPlayerMP;
+import lain.mods.skinport.impl.forge.network.SkinPortPackets;
+import moddedmite.rustedironcore.network.Network;
+import moddedmite.rustedironcore.network.Packet;
+import moddedmite.rustedironcore.network.PacketByteBuf;
+import net.minecraft.EntityPlayer;
+import net.minecraft.ResourceLocation;
 
-public class PacketGet0 extends NetworkPacket
+public class PacketGet0 implements Packet
 {
 
     public PacketGet0()
@@ -14,24 +16,20 @@ public class PacketGet0 extends NetworkPacket
     }
 
     @Override
-    public void handlePacketClient()
-    {
-        ForgeSkinPort.network.sendToServer(new PacketPut0(SkinCustomization.ClientFlags));
-    }
-
-    @Override
-    public void handlePacketServer(EntityPlayerMP player)
+    public void write(PacketByteBuf buf)
     {
     }
 
     @Override
-    public void readFromBuffer(ByteBuf buf)
+    public void apply(EntityPlayer player)
     {
+        Network.sendToServer(new PacketPut0(SkinCustomization.ClientFlags));
     }
 
     @Override
-    public void writeToBuffer(ByteBuf buf)
+    public ResourceLocation getChannel()
     {
+        return SkinPortPackets.Get0;
     }
 
 }

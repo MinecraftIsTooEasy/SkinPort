@@ -1,5 +1,7 @@
 package lain.mods.skins.api;
 
+import lain.mods.skins.api.interfaces.ISkin;
+
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,7 +11,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import lain.mods.skins.api.interfaces.ISkin;
 
 /**
  * A special ISkin object that will return first ready ISkin object in a collection. <br>
