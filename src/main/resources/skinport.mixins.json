@@ -5,11 +5,11 @@
 	"target": "DEFAULT",
 	"mixins": [
 		"AbstractClientPlayerMixin",
-		"AuthlibBaseUserAuthenticationMixin",
-		"AuthlibHttpAuthenticationServiceMixin",
-		"AuthlibYggdrasilGameProfileRepositoryMixin",
-		"AuthlibYggdrasilMinecraftSessionServiceMixin",
-		"AuthlibYggdrasilUserAuthenticationMixin",
+		"authlib.BaseUserAuthenticationMixin",
+		"authlib.HttpAuthenticationServiceMixin",
+		"authlib.YggdrasilGameProfileRepositoryMixin",
+		"authlib.YggdrasilMinecraftSessionServiceMixin",
+		"authlib.YggdrasilUserAuthenticationMixin",
 		"GuiOptionsMixin",
 		"RenderManagerMixin"
 	],
